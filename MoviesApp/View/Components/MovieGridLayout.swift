@@ -19,7 +19,7 @@ struct MovieGridLayout: View {
         let title = movie.title
         let url = URL(string: imageUrl)
         
-        NavigationLink(destination: MovieDetailsView(movie_id: movie.id)) {
+        NavigationLink(destination: NavigationLazyView(MovieDetailsView(movie_id: movie.id))) {
             ZStack {
                 KFImage.url(url).placeholder {
                     Image(systemName: "film").foregroundColor(Color.red)
@@ -55,5 +55,15 @@ struct MovieLayoutText: View {
             .lineLimit(1)
             .padding(2)
             .shadow(color: .black, radius: 5)
+    }
+}
+
+struct NavigationLazyView<Content: View>: View {
+    let build: () -> Content
+    init(_ build: @autoclosure @escaping () -> Content) {
+        self.build = build
+    }
+    var body: Content {
+        build()
     }
 }

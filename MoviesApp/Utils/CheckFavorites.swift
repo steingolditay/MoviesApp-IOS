@@ -8,17 +8,35 @@
 import Foundation
 
 
-struct CheckInFavorite {
+class FavoritesRepository: ObservableObject {
+    static let shared = FavoritesRepository()
     
     let userDefaults = UserDefaults.standard
+    let decoder = JSONDecoder()
+    @Published var list = [MovieDetails]()
+    
+    private init(){}
+    
+    
+    func getAllFavorites() -> [MovieDetails] {
+        list.removeAll()
+        for (_, value) in userDefaults.dictionaryRepresentation(){
+            if let data = value as? Data {
+                let movieObject =  try? decoder.decode(MovieDetails.self, from: data)
+                if (movieObject != nil){
+                    list.append(movieObject!)
+                }
+            }
+        }
+        return list
+    }
     
     func checkIfFavorite(movieId: Int) -> Bool {
-        let decoder = JSONDecoder()
 
         do {
-            if let storedData = userDefaults.data(forKey: String(movieId)) {
-                let newArray =  try decoder.decode(MovieDetails.self, from: storedData)
-                if (newArray.id! == movieId){
+            if let storedMovie = userDefaults.data(forKey: String(movieId)) {
+                let movieObject =  try decoder.decode(MovieDetails.self, from: storedMovie)
+                if (movieObject.id! == movieId){
                     return true
                 }
             }
@@ -35,6 +53,8 @@ struct CheckInFavorite {
     func removeFromFavorites(movieId: Int) -> Bool {
         if (checkIfFavorite(movieId: movieId)){
             userDefaults.removeObject(forKey: String(movieId))
+            list = FavoritesRepository.shared.getAllFavorites()
+            
             return false
         }
     
@@ -47,6 +67,8 @@ struct CheckInFavorite {
             
             if let encoded = try? encoder.encode(movieDetails){
                 UserDefaults.standard.set(encoded, forKey: String(movieDetails.id!))
+                list = FavoritesRepository.shared.getAllFavorites()
+
             }
             
             return true
@@ -56,5 +78,13 @@ struct CheckInFavorite {
             return false
         }
 
+    }
+}
+
+extension String {
+    static func pointer(_ object: AnyObject?) -> String {
+        guard let object = object else { return "nil" }
+        let opaque: UnsafeMutableRawPointer = Unmanaged.passUnretained(object).toOpaque()
+        return String(describing: opaque)
     }
 }

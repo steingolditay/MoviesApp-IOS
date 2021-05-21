@@ -12,8 +12,9 @@ struct MovieDetailsView: View {
     
     let movieId: Int
     @State var movie = MovieDetails()
-    @State var viewModel: MovieDetailsViewModel
     @State var isFavorite = false
+    @State var viewModel: MovieDetailsViewModel
+    @State var isLoading = true
     
     init(movie_id: Int) {
         self.movieId = movie_id
@@ -23,6 +24,9 @@ struct MovieDetailsView: View {
     
     var body: some View {
         ScrollView {
+            if isLoading {
+                LoadingProgressBar()
+            }
             VStack{
                 if (movie.id != nil){
                     let imageUrl = (movie.backdrop_path != nil) ? Constants.imagePrefixUrlHD + movie.backdrop_path! : ""
@@ -30,11 +34,11 @@ struct MovieDetailsView: View {
                     ZStack {
                         KFImage.url(url)
                             .placeholder {Image(systemName: "film")
-                                .resizable()
                                 .foregroundColor(Color.red)
                             }
                             .resizable()
                             .scaledToFill()
+                        
                         VStack {
                             Spacer()
                             HStack {
@@ -54,17 +58,17 @@ struct MovieDetailsView: View {
                         Detail(title: "Langauge:", value: movie.original_language!)
                         Detail(title: "Genres:", value: String(movie.genres!.count))
                     }
-                    
+
                     Image(systemName: "star")
                         .resizable()
                         .frame(width: 60, height: 60, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
                         .padding()
                         .onTapGesture {
                             if (isFavorite){
-                                self.isFavorite = CheckInFavorite().removeFromFavorites(movieId: movie.id!)
+                                self.isFavorite = FavoritesRepository.shared.removeFromFavorites(movieId: movie.id!)
                             }
                             else {
-                                self.isFavorite = CheckInFavorite().addToFavorites(movieDetails: movie)
+                                self.isFavorite = FavoritesRepository.shared.addToFavorites(movieDetails: movie)
 
                             }
                             
@@ -72,12 +76,14 @@ struct MovieDetailsView: View {
                         .foregroundColor(isFavorite ? .yellow : .black)
                 }
                 Spacer()
-            }.onAppear(){
-                if !viewModel.moviesDetails.isEmpty {
-                    movie = viewModel.moviesDetails[0]
+            }
+            .onAppear(){
+                viewModel.loadPage(completion: { result in
+                    isLoading = false
+                    self.movie = result
+                    isFavorite = FavoritesRepository.shared.checkIfFavorite(movieId: movieId)
+                })
 
-                }
-                self.isFavorite = CheckInFavorite().checkIfFavorite(movieId: movieId)
             }
         }
     }
@@ -101,6 +107,8 @@ struct Detail: View {
         
     }
 }
+
+
 
 struct MovieDetails_Previews: PreviewProvider {
     static var previews: some View {
