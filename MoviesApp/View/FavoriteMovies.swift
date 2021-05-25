@@ -10,9 +10,8 @@ import SwiftUI
 struct FavoriteMovies: View {
     
     let title: String
-    let repo = FavoritesRepository.shared
-
-    @State var list = FavoritesRepository.shared.list
+    @ObservedObject var repo = FavoritesRepository.shared
+    @State var isShown = false
     
     
     var body: some View {
@@ -21,24 +20,25 @@ struct FavoriteMovies: View {
                 LazyVGrid(
                     columns:
                         [GridItem(.flexible(minimum: 100, maximum: 300), spacing: 16, alignment: .top),
-                        GridItem(.flexible(minimum: 100, maximum: 300), spacing: 16, alignment: .top)],
+                         GridItem(.flexible(minimum: 100, maximum: 300), spacing: 16, alignment: .top)],
                     content: {
-                        ForEach(list){ result in
-                            let movieObject = Movie(id: result.id!, title: result.title!, popularity: result.popularity!, backdrop_path: result.backdrop_path!)
+                        ForEach(repo.list.sorted {$0.id! < $1.id!}){ result in
+                            let movieObject = Movie(id: result.id!, title: result.title!, popularity: nil, backdrop_path: result.backdrop_path!)
                             MovieGridLayout(movie: movieObject)
                         }
                     }
                 )
-                
-                Text("\(list.count)")
-                    .padding()
-                
             }
             .padding()
             .navigationTitle(title)
         }
         .onAppear() {
-            list = repo.getAllFavorites()
+            if !isShown {
+                repo.getAllFavorites()
+                isShown = true
+
+            }
+            
         }
     
     }

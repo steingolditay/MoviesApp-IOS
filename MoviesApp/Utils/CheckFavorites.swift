@@ -18,17 +18,17 @@ class FavoritesRepository: ObservableObject {
     private init(){}
     
     
-    func getAllFavorites() -> [MovieDetails] {
-        list.removeAll()
+    func getAllFavorites() -> Void {
+        var newList = [MovieDetails]()
         for (_, value) in userDefaults.dictionaryRepresentation(){
             if let data = value as? Data {
                 let movieObject =  try? decoder.decode(MovieDetails.self, from: data)
                 if (movieObject != nil){
-                    list.append(movieObject!)
+                    newList.append(movieObject!)
                 }
             }
         }
-        return list
+        list = newList
     }
     
     func checkIfFavorite(movieId: Int) -> Bool {
@@ -40,20 +40,19 @@ class FavoritesRepository: ObservableObject {
                     return true
                 }
             }
-            else {
-                return false
-            }
+            return false
+            
         }
         catch {
             print(error)
+            return false
         }
-        return false
     }
     
     func removeFromFavorites(movieId: Int) -> Bool {
         if (checkIfFavorite(movieId: movieId)){
             userDefaults.removeObject(forKey: String(movieId))
-            list = FavoritesRepository.shared.getAllFavorites()
+            getAllFavorites()
             
             return false
         }
@@ -67,7 +66,7 @@ class FavoritesRepository: ObservableObject {
             
             if let encoded = try? encoder.encode(movieDetails){
                 UserDefaults.standard.set(encoded, forKey: String(movieDetails.id!))
-                list = FavoritesRepository.shared.getAllFavorites()
+                getAllFavorites()
 
             }
             

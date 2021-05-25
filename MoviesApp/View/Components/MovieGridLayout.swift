@@ -15,7 +15,7 @@ struct MovieGridLayout: View {
     var body: some View {
         
         let imageUrl = (movie.backdrop_path != nil) ? Constants.imagePrefixUrl + movie.backdrop_path! : ""
-        let popularitry = String(format: "%.2f", movie.popularity)
+        let popularitry = (movie.popularity != nil) ? String(format: "%.2f", movie.popularity!) : ""
         let title = movie.title
         let url = URL(string: imageUrl)
         

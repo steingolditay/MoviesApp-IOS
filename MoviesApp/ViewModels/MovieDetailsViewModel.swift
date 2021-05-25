@@ -9,7 +9,7 @@ import Foundation
 
 class MovieDetailsViewModel: ObservableObject {
     
-    @Published var moviesDetails = MovieDetails()
+    @Published var movieGenres = ""
     let movieId: Int
  
     init(movieId: Int){
@@ -21,8 +21,15 @@ class MovieDetailsViewModel: ObservableObject {
 
         URLSession.shared.dataTask(with: url) { (data, response, error) in
             let result = try! JSONDecoder().decode(MovieDetails.self, from: data!)
-                DispatchQueue.main.async {
-                    completion(result)
+            var genreList = [String]()
+            
+            for genre in result.genres! {
+                genreList.append(genre.name)
+            }
+            self.movieGenres = genreList.joined(separator: ", ")
+            
+            DispatchQueue.main.async {
+                completion(result)
             }
         }
         .resume()

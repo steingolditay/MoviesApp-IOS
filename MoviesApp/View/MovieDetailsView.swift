@@ -21,6 +21,8 @@ struct MovieDetailsView: View {
         self.viewModel = MovieDetailsViewModel(movieId: movieId)
 
     }
+
+    
     
     var body: some View {
         ScrollView {
@@ -31,6 +33,7 @@ struct MovieDetailsView: View {
                 if (movie.id != nil){
                     let imageUrl = (movie.backdrop_path != nil) ? Constants.imagePrefixUrlHD + movie.backdrop_path! : ""
                     let url = URL(string: imageUrl)
+                    
                     ZStack {
                         KFImage.url(url)
                             .placeholder {Image(systemName: "film")
@@ -56,7 +59,7 @@ struct MovieDetailsView: View {
                         Detail(title: "Popularity:", value: String(format: "%.2f", movie.popularity!))
                         Detail(title: "Release Date:", value: movie.release_date!)
                         Detail(title: "Langauge:", value: movie.original_language!)
-                        Detail(title: "Genres:", value: String(movie.genres!.count))
+                        Detail(title: "Genres:", value: String(viewModel.movieGenres))
                     }
 
                     Image(systemName: "star")
@@ -86,6 +89,7 @@ struct MovieDetailsView: View {
 
             }
         }
+
     }
 }
 

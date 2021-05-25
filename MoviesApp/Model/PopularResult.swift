@@ -18,7 +18,7 @@ struct Movie: Codable, Identifiable {
     let uuid = UUID()
     let id: Int
     let title: String
-    let popularity: Double
+    let popularity: Double?
     let backdrop_path: String?
     
 }
